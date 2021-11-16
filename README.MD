@@ -1,0 +1,3 @@
+# Desafio 03 - Criando um hook de carrinho de compras
+
+### O seguinte repositório contem a resolução do desafio criando um hook de carrinho de compras, da trilha React do Ignite. No desafio, ...
