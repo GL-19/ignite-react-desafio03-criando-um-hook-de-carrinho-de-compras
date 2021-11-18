@@ -34,8 +34,6 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
 	const addProduct = async (productId: number) => {
 		try {
-			let productIsOnCart = false;
-
 			const { data } = await api.get<Stock>(`stock/${productId}`);
 			const stock = data.amount;
 
@@ -43,20 +41,21 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 				throw new Error("Quantidade solicitada fora de estoque");
 			}
 
-			const products = cart.map((product) => {
-				if (product.id === productId) {
-					if (product.amount < stock) {
-						product.amount++;
-						productIsOnCart = true;
-					} else {
-						throw new Error("Quantidade solicitada fora de estoque");
-					}
-				}
-
-				return product;
-			});
+			const productIsOnCart = cart.some((product) => product.id === productId);
 
 			if (productIsOnCart) {
+				const products = cart.map((product) => {
+					if (product.id === productId) {
+						if (product.amount < stock) {
+							product.amount++;
+						} else {
+							throw new Error("Quantidade solicitada fora de estoque");
+						}
+					}
+
+					return product;
+				});
+
 				setCart(products);
 				localStorage.setItem("@RocketShoes:cart", JSON.stringify(products));
 			} else {
@@ -80,9 +79,9 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
 	const removeProduct = (productId: number) => {
 		try {
-			const removedProduct = cart.find((product) => product.id === productId);
+			const productIsOnCart = cart.some((product) => product.id === productId);
 
-			if (!removedProduct) throw new Error();
+			if (!productIsOnCart) throw new Error();
 
 			const products = cart.filter((product) => product.id !== productId);
 
@@ -96,8 +95,6 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 	const updateProductAmount = async ({ productId, amount }: UpdateProductAmount) => {
 		if (amount > 0) {
 			try {
-				let productIsOnCart = false;
-
 				const response = await api.get(`stock/${productId}`);
 				const stock = response.data.amount;
 
@@ -105,16 +102,17 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 					throw new Error("Quantidade solicitada fora de estoque");
 				}
 
-				const products = cart.map((product) => {
-					if (product.id === productId) {
-						product.amount = amount;
-						productIsOnCart = true;
-					}
-
-					return product;
-				});
+				const productIsOnCart = cart.some((product) => product.id === productId);
 
 				if (productIsOnCart) {
+					const products = cart.map((product) => {
+						if (product.id === productId) {
+							product.amount = amount;
+						}
+
+						return product;
+					});
+
 					setCart(products);
 					localStorage.setItem("@RocketShoes:cart", JSON.stringify(products));
 				} else {
